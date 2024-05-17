@@ -23,13 +23,6 @@ class Sign_Up : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_up)
 
-        lateinit var auth: FirebaseAuth
-        lateinit var callbacks: PhoneAuthProvider.OnVerificationStateChangedCallbacks
-        var storedVerificationId: String? = null
-        var resendToken: PhoneAuthProvider.ForceResendingToken? = null
-
-        auth = FirebaseAuth.getInstance()
-
         var passwordshowing = false
         var conpasswordshowing = false
 
@@ -71,88 +64,24 @@ class Sign_Up : AppCompatActivity() {
             conpasswordedt.setSelection(conpasswordedt.length())
         }
 
-        fun signInWithPhoneAuthCredential(credential: PhoneAuthCredential) {
-            auth.signInWithCredential(credential)
-                .addOnCompleteListener(this) { task ->
-                    if (task.isSuccessful) {
-                        val user = task.result?.user
-                    } else {
-                        TODO("Not yet implemented")
-                    }
-                }
-        }
-
-        callbacks = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-            override fun onVerificationCompleted(credential: PhoneAuthCredential) {
-                signInWithPhoneAuthCredential(credential)
-            }
-
-            override fun onVerificationFailed(p0: FirebaseException) {
-                TODO("Not yet implemented")
-            }
-
-            override fun onCodeSent(
-                verificationId: String,
-                token: PhoneAuthProvider.ForceResendingToken
-            ) {
-                storedVerificationId = verificationId
-                resendToken = token
-            }
-        }
-
         signupbtn.setOnClickListener {
             var mobiletxt = mobileedt.text.toString()
             var emailtxt = emailedt.text.toString()
             var password = passwordedt.text.toString()
             var conpassword = conpasswordedt.text.toString()
+            var fullname = fullname.text.toString()
 
-            if(mobiletxt == null){
-                Toast.makeText(this, "Enter Mobile", Toast.LENGTH_SHORT).show()
+            if (mobiletxt.isEmpty() || emailtxt.isEmpty() || password.isEmpty() || conpassword.isEmpty() || fullname.isEmpty()) {
+                Toast.makeText(this, "All fields are required", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }else{
+                Toast.makeText(this, "Account Created Successfully", Toast.LENGTH_SHORT).show()
             }
-            if(emailtxt == null){
-                Toast.makeText(this, "Enter Email", Toast.LENGTH_SHORT).show()
-            }
-            if(password == null){
-                Toast.makeText(this, "Enter Password", Toast.LENGTH_SHORT).show()
-            }
-            if(conpassword == null){
-                Toast.makeText(this, "Confirm Password", Toast.LENGTH_SHORT).show()
-            }
-            if(fullname.text.toString() == null){
-                Toast.makeText(this, "Enter Name", Toast.LENGTH_SHORT).show()
-            }
-            if(password != conpassword){
-                Toast.makeText(this, "Password & Confirm Password should be same", Toast.LENGTH_SHORT).show()
-            }
-
-            auth.createUserWithEmailAndPassword(emailtxt, password)
-                .addOnCompleteListener(this) { task ->
-                    if (task.isSuccessful) {
-                        val user = auth.currentUser
-                        Toast.makeText(
-                            baseContext,
-                            "Account Created Successfully",
-                            Toast.LENGTH_SHORT,
-                        ).show()
-                    } else {
-                        Toast.makeText(
-                            baseContext,
-                            "Authentication failed.",
-                            Toast.LENGTH_SHORT,
-                        ).show()
-                    }
-                }
 
             var intent = Intent(this,OTPverification::class.java)
             intent.putExtra("email",emailtxt)
             intent.putExtra("mobile",mobiletxt)
-            val options = PhoneAuthOptions.newBuilder(auth)
-                .setPhoneNumber(mobiletxt)
-                .setTimeout(60L, TimeUnit.SECONDS)
-                .setActivity(this)
-                .setCallbacks(callbacks)
-                .build()
-            PhoneAuthProvider.verifyPhoneNumber(options)
+            intent.putExtra("fullname",fullname)
             startActivity(intent)
         }
         loginupbtn.setOnClickListener {
